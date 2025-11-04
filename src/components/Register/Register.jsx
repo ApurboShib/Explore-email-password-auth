@@ -1,8 +1,12 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
 import auth from "../../firebase.init";
+import { useState } from "react";
 
 const Register = () => {
+  // use useState to check success and error message
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const handleRegister = (e) => {
     // Prevent page reload
     e.preventDefault();
@@ -15,16 +19,35 @@ const Register = () => {
     const password = formData.get("password");
 
     console.log(email, password);
+    // reset success and error messages.
+    setSuccess(false);
+    // Clear previous error message
+    setError("");
+
+    // password validation
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError(
+        "Password must be at least 8 characters long and include at least one number, one lowercase letter, and one uppercase letter."
+      );
+      // Stop further execution if validation fails
+      return;
+    }
 
     // create user with email and password logic will go here..
-
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         console.log(userCredential);
       })
       .catch((error) => {
         console.error("Error creating user:", error);
+        // Set error message to state
+        setError(error.message);
       });
+    // If user is created successfully, set the success message
+    setSuccess(true);
+    // Reset the form after submission
+    form.reset();
   };
 
   return (
@@ -103,6 +126,12 @@ const Register = () => {
           Submit
         </button>
       </form>
+
+      {/* Render success or error message */}
+      {success && (
+        <p className="mt-4 text-green-600">User created successfully!</p>
+      )}
+      {error && <p className="mt-4 text-red-600">Error: {error}</p>}
     </div>
   );
 };
