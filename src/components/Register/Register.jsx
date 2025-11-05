@@ -1,6 +1,10 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import auth from "../../firebase.init";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const Register = () => {
@@ -47,14 +51,27 @@ const Register = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         console.log(userCredential);
+        setSuccess(true);
+        setError("");
+        if (!userCredential.user.emailVerified) {
+          alert("Please verify your email address.");
+        }
+        else {
+          setSuccess(true)
+        }
+
+        // email verification logic are implemented here.
+        sendEmailVerification(userCredential.user).then(() => {
+          alert("Verification email sent. Please check your inbox.");
+        });
       })
       .catch((error) => {
         console.error("Error creating user:", error);
         // Set error message to state
         setError(error.message);
       });
-    // If user is created successfully, set the success message
-    setSuccess(true);
+   
+    
     // Reset the form after submission
     form.reset();
   };
@@ -67,7 +84,6 @@ const Register = () => {
       </div>
       <form className="space-y-5" onSubmit={handleRegister}>
         {/* Email field */}
-
         <label className="input validator join-item">
           <svg
             className="h-[1em] opacity-50"
@@ -93,9 +109,7 @@ const Register = () => {
           />
         </label>
         <div className="validator-hint hidden">Enter valid email address</div>
-
         <br />
-
         {/* Password field */}
         <label className="input validator">
           <svg
@@ -146,11 +160,17 @@ const Register = () => {
         </label>
         <br />
         {/* Submit button */}
-        <button type="submit"  className="btn btn-primary">
-          Submit
+        <button type="submit" className="btn btn-primary">
+          SignUp
         </button>
       </form>
-
+      <br />
+      <p>
+        Already have an account?{" "}
+        <Link className="text-blue-600 underline font-bold" to="/login">
+          Login
+        </Link>{" "}
+      </p>
       {/* Render success or error message */}
       {success && (
         <p className="mt-4 text-green-600">User created successfully!</p>
